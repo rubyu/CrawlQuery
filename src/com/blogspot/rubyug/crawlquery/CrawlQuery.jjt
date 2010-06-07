@@ -1,0 +1,380 @@
+
+options {
+   STATIC=false;
+   MULTI=true;
+   NODE_DEFAULT_VOID=true;
+   NODE_PREFIX="";
+   JAVA_UNICODE_ESCAPE = false;
+   UNICODE_INPUT = true;
+}
+
+PARSER_BEGIN( QueryParser )
+
+package com.blogspot.rubyug.crawlquery;
+
+import java.io.*;
+import java.util.*;
+
+public class QueryParser {
+  public static void main(String[] args) {
+    
+  }
+}
+
+PARSER_END( QueryParser )
+
+SimpleNode parse() #Query : {} {
+  ( Crawl() [ Chain() Index() ] )? <EOF>
+  {
+    return jjtThis;
+  }
+}
+
+void Index() #Query_Option_Index :
+{}
+{
+  "@" IndexPrimaries()
+}
+
+void IndexPrimaries() :
+{}
+{
+  IndexPrimary()
+  (
+    "," IndexPrimary()
+  )*  
+}
+
+void IndexPrimary() :
+{}
+{
+  LOOKAHEAD(2)
+  IndexOrder()
+|
+  Condition() #Index_Order
+}
+
+void IndexOrder() #Index_Order :
+{}
+{
+  ( FieldSortable() | FieldId() )? ( IndexOrderASC() | IndexOrderDESC() )
+}
+
+void IndexOrderASC() #Order_ASC :
+{
+  Token t;
+}
+{
+  t = <ORDER_ASC> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+void IndexOrderDESC() #Order_DESC :
+{
+  Token t;
+}
+{
+  t = <ORDER_DESC>  {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+void Crawl() :
+{}
+{
+  CrawlStatement()
+  (
+    (
+      "|" CrawlStatement() #Crawl_Operator_Union(2)
+    |
+      "&" CrawlStatement() #Crawl_Operator_Intersection(2)
+    |
+      "-" CrawlStatement() #Crawl_Operator_Difference(2)
+    |
+      "^" CrawlStatement() #Crawl_Operator_SymmetricDifference(2)
+    )
+  )*
+}
+
+void CrawlStatement() #Crawl :
+{}
+{
+  CrawlPrimary()
+    (
+      LOOKAHEAD(2)
+      Chain()
+        (
+          "$" Condition() #Crawl_Set_Condition
+        |
+          "#" Condition() #Crawl_Filter
+        |
+          Depth() #Crawl_Execute
+        )
+    )*
+}
+
+void CrawlPrimary() :
+{}
+{
+  LeftParen() Crawl() RightParen()
+|
+  Urls()
+}
+
+void Urls() #Urls :
+{}
+{
+  Url() ( "," Url() )*
+}
+
+void Url() #Url_Value :
+{
+  Token t;
+}
+{
+  t = <URL> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, t.image } );
+  }
+}
+
+void Condition() #Condition :
+{}
+{
+  ConditionOr()
+}
+
+void ConditionOr() :
+{}
+{
+  ConditionAnd()
+    (
+      LOOKAHEAD(2)
+      "|" ConditionAnd() #Condition_OR(2)
+    )*
+}
+
+void ConditionAnd() :
+{}
+{
+  ConditionUnary()
+    (
+      LOOKAHEAD(2)
+      "&" ConditionUnary() #Condition_AND(2)
+    )*
+}
+
+void ConditionUnary() :
+{}
+{
+  ConditionPrimary()
+|
+  ConditionUnaryNot()
+}
+
+void ConditionUnaryNot() #Condition_Unary_NOT :
+{}
+{
+  "!" ConditionUnary()
+}
+
+void ConditionPrimary() :
+{}
+{
+  LeftParen() Condition() RightParen()
+|
+  Match()
+}
+
+void Match() #Condition_Match :
+{}
+{
+  [ Field() ] Regex()
+}
+
+void Regex() #Regex :
+{}
+{
+  RegexPattern() [ RegexOption() ]
+}
+
+void RegexPattern() #Regex_Pattern_Value :
+{
+  Token t;
+}
+{
+  t = <REGEX> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, t.image } );
+  }
+}
+
+void RegexOption() #Regex_Option_Value :
+{
+  Token t;
+}
+{
+  t = <REGEX_OPTION> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, t.image } );
+  }
+}
+
+void Field() :
+{}
+{
+  FieldSortable()
+| FieldNotSortable()
+}
+
+void FieldSortable() :
+{}
+{
+  FieldUrl()
+| FieldLinkword()
+| FieldTitle()
+}
+
+void FieldNotSortable() :
+{}
+{
+  FieldBody()
+| FieldText()
+}
+
+void FieldId()  #Field_ID :
+{
+  Token t;
+}
+{
+  t = <FIELD_ID> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+void FieldUrl()  #Field_URL :
+{
+  Token t;
+}
+{
+  t = <FIELD_URL> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+void FieldLinkword() #Field_LINKWORD :
+{
+  Token t;
+}
+{
+  t = <FIELD_LINKWORD> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+void FieldTitle() #Field_TITLE :
+{
+  Token t;
+}
+{
+  t = <FIELD_TITLE> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+void FieldBody() #Field_BODY :
+{
+  Token t;
+}
+{
+  t = <FIELD_BODY> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+void FieldText() #Field_TEXT :
+{
+  Token t;
+}
+{
+  t = <FIELD_TEXT> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+void Depth() #Depth_Value :
+{
+  Token t;
+}
+{
+  t = <NUMBER> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, t.image } );
+  }
+}
+
+void LeftParen() #Left_Paren :
+{
+  Token t;
+}
+{
+  t = <L_PAREN> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+void RightParen() #Right_Paren :
+{
+  Token t;
+}
+{
+  t = <R_PAREN> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+void Chain() #Chain :
+{
+  Token t;
+}
+{
+  t = <GT> {
+    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
+  }
+}
+
+SKIP  : {
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN : {
+  < L_PAREN : "(" >
+| < R_PAREN : ")" >
+| < GT      : ">" >
+
+| < FIELD_ID       : "id"       | "ID" >
+| < FIELD_URL      : "url"      | "URL" >
+| < FIELD_LINKWORD : "linkword" | "LINKWORD" >
+| < FIELD_TITLE    : "title"    | "TITLE" >
+| < FIELD_BODY     : "body"     | "BODY" >
+| < FIELD_TEXT     : "text"     | "TEXT" >
+
+| < ORDER_ASC  : "asc"  | "ASC" >
+| < ORDER_DESC : "desc" | "DESC" >
+
+| < NUMBER : ["1"-"9"] (["0"-"9"])* >
+
+| < URL    : "\"" ( ~["\""] | "\\\"" )* "\"" >
+
+| < REGEX  : "/" ( ~["/"] | "\\/" )* "/" >
+| < REGEX_OPTION : ( ["a"-"z"] )+ >
+}
+
+JAVACODE
+void error_skipto(int kind) {
+  Token t;
+  do {
+    t = getNextToken();
+    System.out.println( "skip: " + t.toString() );
+  } while (jj_ntk != -1 && t.kind != kind);
+}
