@@ -51,7 +51,7 @@ void IndexPrimary() :
   LOOKAHEAD(2)
   IndexOrder()
 |
-  Condition() #Index_Order
+  Condition()
 }
 
 void IndexOrder() #Index_Order :
@@ -229,7 +229,6 @@ void FieldSortable() :
 {}
 {
   FieldUrl()
-| FieldLinkword()
 | FieldTitle()
 }
 
@@ -256,16 +255,6 @@ void FieldUrl()  #Field_URL :
 }
 {
   t = <FIELD_URL> {
-    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
-  }
-}
-
-void FieldLinkword() #Field_LINKWORD :
-{
-  Token t;
-}
-{
-  t = <FIELD_LINKWORD> {
     jjtThis.jjtSetValue( new Object[]{ null, t, null } );
   }
 }
@@ -310,34 +299,25 @@ void Depth() #Depth_Value :
   }
 }
 
-void LeftParen() #Left_Paren :
+void LeftParen() :
 {
-  Token t;
 }
 {
-  t = <L_PAREN> {
-    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
-  }
+  <L_PAREN>
 }
 
-void RightParen() #Right_Paren :
+void RightParen() :
 {
-  Token t;
 }
 {
-  t = <R_PAREN> {
-    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
-  }
+  <R_PAREN>
 }
 
-void Chain() #Chain :
+void Chain() :
 {
-  Token t;
 }
 {
-  t = <GT> {
-    jjtThis.jjtSetValue( new Object[]{ null, t, null } );
-  }
+  <GT>
 }
 
 SKIP  : {
@@ -354,7 +334,6 @@ TOKEN : {
 
 | < FIELD_ID       : "id"       | "ID" >
 | < FIELD_URL      : "url"      | "URL" >
-| < FIELD_LINKWORD : "linkword" | "LINKWORD" >
 | < FIELD_TITLE    : "title"    | "TITLE" >
 | < FIELD_BODY     : "body"     | "BODY" >
 | < FIELD_TEXT     : "text"     | "TEXT" >
