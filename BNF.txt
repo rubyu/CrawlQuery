@@ -1,0 +1,52 @@
+
+
+query
+	  urls
+	| query ">" ( sort | opt_transform | opt_merge )
+
+urls
+	  url
+	| urls ">" (set | filter | number)
+set
+	  ( "$" ) ? expressions
+filter
+	  "#" expressions
+
+sort
+	  "@" sort_option
+	| "@" sort_option ":" sort_order
+	| "@" sort_order
+
+sort_option
+	  ( sort_option "," )? sort_target
+
+sort_order
+	  ( sort_order "," )? (sort_target)? ( ( "asc" | "desc" ) | expression )
+
+expressions
+	  ( expressions "," )? expression
+expression
+	  regex
+	| "(" + expression + ")" 
+	| "!" expression
+	| expression "&" expression
+	| expression "|" expression
+
+url
+	"\"" ( ~["\""] | "\\\"" )* "\""
+
+regex
+	"/" ( ~["/"] | "\/" )* "/" ( ["a"-"z"] )+
+
+comment
+	"/*" ( ~["/*", "*/"] )* "*/"
+
+
+opt_merge
+	: "merge"
+opt_transform
+	: ( "html" | "simple" | "text" )
+sort_target
+	: ( "url" | "linkword" | "title" | "body" | "text" )
+number
+	: ["0" - "9"]+

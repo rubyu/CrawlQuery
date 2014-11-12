@@ -1,0 +1,5 @@
+/.bzr/
+/build/
+/dist/
+/src/
+!/src/com/blogspot/rubyug/CrawlQuery/CrawlQuery.jjt
